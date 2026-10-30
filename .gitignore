@@ -1,0 +1,22 @@
+# Local agent/runtime state (never commit)
+.agent-service/
+.dotnet/
+.notion/**/credentials*
+.specify/feature.json
+# .NET and IDE outputs
+**/bin/
+**/obj/
+packages/
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.log
+*.tmp
+.env*
+# Local experiment data; publish only explicitly reviewed/redacted reports
+artifacts/
+spikes/**/evidence/
+.DS_Store
+Thumbs.db
