@@ -27,24 +27,32 @@ internal sealed class GuardianSession : IAsyncDisposable
         };
     }
 
-    internal static async Task<GuardianSession> StartAsync(TargetSnapshot target)
+    internal static async Task<GuardianSession> StartAsync(TargetSnapshot target, Action<string>? stage = null)
     {
+        stage?.Invoke("GuardianTargetIdentity");
         Native.ValidateLive(target);
         var name = "WinTag.Spike.Guardian." + Guid.NewGuid().ToString("N");
         var pipe = CreateServer(name);
         using var self = Process.GetCurrentProcess();
+        stage?.Invoke("GuardianSpawn");
         var process = Program.Spawn("--guardian", name, self.Id.ToString(), self.StartTime.ToUniversalTime().Ticks.ToString());
         var session = new GuardianSession(target, pipe, process);
         try
         {
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+            stage?.Invoke("GuardianPipeConnect");
             await pipe.WaitForConnectionAsync(timeout.Token);
+            stage?.Invoke("GuardianHandshake");
             await session._writer.WriteLineAsync(Wire.Encode(target));
             var ack = Wire.Decode<GuardianReply>(await session._reader.ReadLineAsync(timeout.Token));
-            if (!ack.Ok) throw new InvalidOperationException(ack.Message);
+            if (!ack.Ok) throw new ProbeFailure(ack.ErrorCode ?? DiagnosticCode.GuardianRejected, ack.NativeHResult);
             return session;
         }
-        catch { await session.DisposeAsync(); throw; }
+        catch
+        {
+            try { await session.DisposeAsync(); } catch (Exception) { /* Keep original startup error. */ }
+            throw;
+        }
     }
 
     internal static NamedPipeServerStream CreateServer(string name) => new(name, PipeDirection.InOut,
@@ -56,11 +64,11 @@ internal sealed class GuardianSession : IAsyncDisposable
         try
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
-            if (_process.HasExited) throw new InvalidOperationException("Guardian exited; mutation disabled.");
+            if (_process.HasExited) throw new ProbeFailure(DiagnosticCode.GuardianExited);
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
             await _writer.WriteLineAsync(Wire.Encode(command).AsMemory(), timeout.Token);
             var reply = Wire.Decode<GuardianReply>(await _reader.ReadLineAsync(timeout.Token));
-            if (!reply.Ok) throw new InvalidOperationException(reply.Message);
+            if (!reply.Ok) throw new ProbeFailure(reply.ErrorCode ?? DiagnosticCode.GuardianRejected, reply.NativeHResult);
             return reply.Message;
         }
         catch

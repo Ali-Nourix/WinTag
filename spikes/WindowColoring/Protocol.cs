@@ -17,7 +17,10 @@ public sealed record TargetSnapshot(long Hwnd, int ProcessId, long ProcessBirthT
 }
 
 public sealed record GuardianCommand(string Action, uint Caption = 0, uint Border = 0);
-public sealed record GuardianReply(bool Ok, string Message);
+public sealed record GuardianReply(bool Ok, string Message,
+    DiagnosticCode? ErrorCode = null, int? NativeHResult = null);
+public sealed record TargetHello(TargetSnapshot? Target, DiagnosticCode? ErrorCode = null,
+    int? NativeHResult = null);
 
 public static class Wire
 {

@@ -15,7 +15,13 @@ internal static class Guardian
         var reader = new StreamReader(pipe, leaveOpen: true);
         var writer = new StreamWriter(pipe, leaveOpen: true) { AutoFlush = true };
         var snapshot = Wire.Decode<TargetSnapshot>(await reader.ReadLineAsync(connectTimeout.Token));
-        Native.ValidateLive(snapshot);
+        try { Native.ValidateLive(snapshot); }
+        catch (Exception error)
+        {
+            await writer.WriteLineAsync(Wire.Encode(new GuardianReply(false, "Identity rejected.",
+                SafeDiagnostics.Code(error), SafeDiagnostics.NativeResult(error))));
+            return 2;
+        }
         // The separate controlled target itself seeded these exact originals. Never a foreign app.
         await writer.WriteLineAsync(Wire.Encode(new GuardianReply(true, "Snapshot acknowledged; DWM mutations are guardian-owned.")));
         var commands = ProcessCommands(reader, writer, snapshot);
@@ -57,7 +63,7 @@ internal static class Guardian
             catch (Exception error) when (error is InvalidOperationException or InvalidDataException)
             {
                 try { Native.Restore(snapshot); } catch (InvalidOperationException) { }
-                await writer.WriteLineAsync(Wire.Encode(new GuardianReply(false, error.Message)));
+                await writer.WriteLineAsync(Wire.Encode(new GuardianReply(false, "Command rejected.", SafeDiagnostics.Code(error), SafeDiagnostics.NativeResult(error))));
             }
         }
     }

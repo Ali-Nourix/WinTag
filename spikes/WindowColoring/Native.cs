@@ -45,7 +45,7 @@ internal static unsafe class Native
     internal static void SetColor(nint hwnd, uint attribute, uint color)
     {
         var hr = PInvoke.DwmSetWindowAttribute(H(hwnd), (DWMWINDOWATTRIBUTE)attribute, &color, sizeof(uint));
-        if (hr.Failed) throw new InvalidOperationException($"DWM set {attribute}: 0x{hr.Value:X8}");
+        if (hr.Failed) throw new ProbeFailure(DiagnosticCode.DwmSetFailed, hr.Value);
     }
 
     internal static string ReadOnlyColorProbe(nint hwnd)
@@ -62,13 +62,13 @@ internal static unsafe class Native
     {
         target.Validate();
         var hwnd = H((nint)target.Hwnd);
-        if (!PInvoke.IsWindow(hwnd)) throw new InvalidOperationException("Target window closed.");
+        if (!PInvoke.IsWindow(hwnd)) throw new ProbeFailure(DiagnosticCode.TargetClosed);
         PInvoke.GetWindowThreadProcessId(hwnd, out var pid);
-        if (pid != target.ProcessId) throw new InvalidOperationException("Target PID changed.");
+        if (pid != target.ProcessId) throw new ProbeFailure(DiagnosticCode.TargetPidChanged);
         using var process = Process.GetProcessById(target.ProcessId);
         if (process.StartTime.ToUniversalTime().Ticks != target.ProcessBirthTicks ||
             ReadMarker((nint)hwnd, target.MarkerName) != 1)
-            throw new InvalidOperationException("Target lease/instance marker is no longer valid.");
+            throw new ProbeFailure(DiagnosticCode.TargetLeaseInvalid);
     }
 
     internal static void Restore(TargetSnapshot target)
@@ -87,7 +87,7 @@ internal static unsafe class Native
     {
         fixed (char* chars = name)
             if (!PInvoke.SetProp(H(hwnd), new PCWSTR(chars), (HANDLE)(nint)1))
-                throw new InvalidOperationException("Could not mark disposable target.");
+                throw new ProbeFailure(DiagnosticCode.MarkerWriteFailed);
     }
     internal static void Unmark(nint hwnd, string name)
     {

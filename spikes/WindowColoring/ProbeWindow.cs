@@ -30,7 +30,7 @@ internal sealed class ProbeWindow : Window
 
     internal ProbeWindow()
     {
-        Title = "WinTag — T001 coloring Spike (NOT production)";
+        Title = "WinTag — T001 coloring Spike v0.1.2 (NOT production)";
         Width = 930; Height = 850;
         var panel = new StackPanel { Margin = new Thickness(18) };
         Content = new ScrollViewer { Content = panel, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
@@ -145,7 +145,9 @@ internal sealed class ProbeWindow : Window
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(15));
         await pipe.WaitForConnectionAsync(timeout.Token);
         using var reader = new StreamReader(pipe);
-        var snapshot = Wire.Decode<TargetSnapshot>(await reader.ReadLineAsync(timeout.Token));
+        var hello = Wire.Decode<TargetHello>(await reader.ReadLineAsync(timeout.Token));
+        if (hello.ErrorCode is { } code) throw new ProbeFailure(code, hello.NativeHResult);
+        var snapshot = hello.Target ?? throw new InvalidDataException("Missing target snapshot.");
         if (snapshot.ProcessId != _targetProcess.Id || snapshot.ProcessBirthTicks != _targetProcess.StartTime.ToUniversalTime().Ticks)
             throw new InvalidDataException("Target handshake process mismatch.");
         Native.ValidateLive(snapshot);

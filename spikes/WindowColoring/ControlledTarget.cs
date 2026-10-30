@@ -31,6 +31,7 @@ internal sealed class ControlledTarget : Window
 
     private async void InitializeTarget(object? sender, EventArgs args)
     {
+        TargetHello hello;
         try
         {
             _hwnd = new WindowInteropHelper(this).Handle;
@@ -39,17 +40,25 @@ internal sealed class ControlledTarget : Window
             Native.SetColor(_hwnd, Native.CaptionAttribute, caption);
             Native.SetColor(_hwnd, Native.BorderAttribute, border);
             using var self = Process.GetCurrentProcess();
-            var snapshot = new TargetSnapshot((long)_hwnd, self.Id,
-                self.StartTime.ToUniversalTime().Ticks, _marker, caption, border);
+            hello = new(new TargetSnapshot((long)_hwnd, self.Id,
+                self.StartTime.ToUniversalTime().Ticks, _marker, caption, border));
+        }
+        catch (Exception error)
+        {
+            hello = new(null, SafeDiagnostics.Code(error), SafeDiagnostics.NativeResult(error));
+            Content = new TextBlock { Text = "Target setup FAILED: " + SafeDiagnostics.Describe(error), Margin = new Thickness(24) };
+        }
+        try
+        {
             using var pipe = new NamedPipeClientStream(".", _pipe, PipeDirection.Out, PipeOptions.Asynchronous);
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(15));
             await pipe.ConnectAsync(timeout.Token);
             await using var writer = new StreamWriter(pipe) { AutoFlush = true };
-            await writer.WriteLineAsync(Wire.Encode(snapshot));
+            await writer.WriteLineAsync(Wire.Encode(hello));
         }
         catch (Exception error)
         {
-            Content = new TextBlock { Text = "Target setup FAILED: " + error.Message, Margin = new Thickness(24) };
+            Content = new TextBlock { Text = "Target handshake FAILED: " + SafeDiagnostics.Describe(error), Margin = new Thickness(24) };
         }
     }
 }
