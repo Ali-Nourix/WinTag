@@ -26,3 +26,14 @@ T001 probe and 18 portable protocol checks are implemented; Windows x64 cross-bu
 succeeds. T001 remains unchecked pending actual Windows validation. T002 and all production
 projects are unstarted. See `docs/validation/coloring-spike.md`; never equate compilation with
 DWM/input/crash/performance correctness.
+
+## Superseding v0.1.1 update — compact indicator / safe local action
+
+User requested a less intrusive badge and selected LOCAL Windows diagnostics, not GitHub
+Actions. Compact neutral <=92x18 DIP badge and local-report button implemented; optional
+PowerShell launcher respects security policy, verifies package checksums and never elevates.
+Default action is read-only except a newly selected report. Controlled companion test is opt-in,
+crash tests are never automatic, no existing app is closed or moved. Reports omit private
+identifiers and leave manual/native acceptance gates NotRun; no automatic upload.
+37 portable checks pass; Windows x64 Release build/publish succeeds without warnings/errors.
+Current interactive action/launcher/native styling NOT RUN by this agent; T001 remains open.

@@ -273,3 +273,20 @@ original colors. Real-app color probes are read-only; arbitrary foreign DWM muta
 This allows safe experiments without assuming setter attributes have trustworthy getters.
 Overlay placement is a foreground-only centered trial, not a certified per-app production
 strategy. Native correctness and full task completion require a Windows tester's evidence.
+
+## User feedback and local action — v0.1.1
+
+User supplied a screenshot of the previous wide green overlay and requested a less intrusive
+indicator. That image is evidence only of prior overlay rendering; app/build, input correctness
+and recovery timing were not recorded. The new design is a neutral compact badge, <=92x18 DIP
+with an eight-grapheme text presentation and a 2-DIP accent. Full text remains in editing and
+accessibility. Native geometry/input and <2-second visual identification must be rechecked.
+
+The user selected a LOCAL Windows action, not GitHub Actions. Implemented a default read-only
+report button and optional PowerShell launcher; controlled DWM is explicit opt-in and only on
+new companion windows, with normal cleanup. No automated process killing, elevation, download,
+upload, scheduling or system-security changes. Reports omit private titles/app inventories and
+never auto-certify visual/crash/performance/traffic gates. Default output is a new local JSON
+file; no overwrite, UNC/network drive or junction/symlink destination is permitted.
+37 portable checks pass; Windows compilation succeeds. Neither the button, launcher nor current
+native rendering was executed on Windows by this agent. T001 remains incomplete, T002 unstarted.
