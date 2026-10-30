@@ -37,3 +37,15 @@ crash tests are never automatic, no existing app is closed or moved. Reports omi
 identifiers and leave manual/native acceptance gates NotRun; no automatic upload.
 37 portable checks pass; Windows x64 Release build/publish succeeds without warnings/errors.
 Current interactive action/launcher/native styling NOT RUN by this agent; T001 remains open.
+
+## Usable preview 0.2.0 and guardian fix 0.1.3
+
+User requested immediate usable build rather than diagnostic-only iteration. Isolated preview
+under previews/WinTag.Preview provides tray, edge panel, search/tags/rules/configurable shortcuts,
+current-desktop Preserve, group normal close/minimize and opt-in own-window badge. No production
+checklist gate is upgraded. Desktop COM/Gather, layouts, autostart and durable manual identity
+remain absent/disabled. Read preview README and docs/validation/preview-0.2.md for exact limits.
+
+New user report localizes InvalidState to GuardianSpawn. Real-pipe reproduction confirms
+StreamWriter AutoFlush before connection throws. Spike v0.1.3 now waits for connection before
+constructing streams; 51 portable/IPC checks pass. Windows DWM evidence remains pending.

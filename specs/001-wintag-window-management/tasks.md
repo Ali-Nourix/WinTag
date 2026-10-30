@@ -2,7 +2,7 @@
 
 **Input**: `specs/001-wintag-window-management/` spec, plan, research, data model and contracts.
 **Prerequisites**: Approved task list plus Windows 11 evidence environment before execution.
-**Status**: IMPLEMENTATION STARTED — T001 probe, compact overlay and safe local diagnostic action implemented/cross-built; Windows validation pending. No task completed yet.
+**Status**: IMPLEMENTATION STARTED — T001 probe v0.1.3 fixes pre-connect AutoFlush; native validation pending. At explicit user request an isolated usable preview 0.2.0 exists under `previews/`, not gated production scaffolding. No task completed yet; see `docs/validation/preview-0.2.md`.
 **Tests**: Explicitly requested rule/layout tests plus constitution-required safety/identity,
 shortcut and manual compatibility coverage. Write tests first and observe expected failures.
 **Organization**: Setup -> foundation -> P1 stories (US1/2/3/4/8) -> P2 (US5/6) -> P3 (US7).
