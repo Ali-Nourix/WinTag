@@ -18,7 +18,7 @@ Date: 2026-10-30. Status: **IN PROGRESS / WINDOWS VALIDATION BLOCKED**.
 
 | Check | Result | Boundary |
 | --- | --- | --- |
-| Pure protocol self-tests | PASS, 18 checks | No user32/dwmapi, named-pipe or recovery execution |
+| Portable self-tests (v0.1.1) | PASS, 37 checks | No user32/dwmapi, named-pipe or recovery execution |
 | Release cross-build | PASS, 0 warnings / 0 errors | Linux compiler with Windows reference packs |
 | Windows x64 publish | PASS | Framework-dependent PE apphost and managed assembly produced |
 | Windows app launch | NOT RUN | No Windows session on agent machine |
@@ -52,3 +52,22 @@ caption/border setter attributes is uncertain and is not treated as safe origina
 Until exact capture/recovery is proved, foreign DWM stays disabled and overlay-only must prove
 compliance independently. Test simple centered placement against custom tabs/caption controls.
 No production source, T002 or T003 has been created. All checklist markers remain read-only.
+
+## v0.1.1 local-action and presentation update
+
+- User feedback: previous badge was too prominent. Prior screenshot confirms rendering only;
+  no private screenshot/title is committed and no native-safety gate is upgraded.
+- Compact neutral text badge: <=92x18 DIP, eight graphemes plus ellipsis, muted 2-DIP accent.
+- Added one-button LOCAL diagnostics and an optional transparent PowerShell launcher. Default
+  has no target/guardian and is read-only apart from the explicitly selected report file.
+- Controlled DWM test is opt-in on a newly created companion only; never a selected real app.
+  Normal cleanup only, no automatic kill/crash. Existing reports and window state are preserved.
+- Runtime report labels return-code checks versus unrun visual/click-through/crash/DPI/desktop/
+  performance/traffic gates; productionAcceptance remains false regardless of individual Pass.
+- Development suite: 37 portable checks PASS; source-first tests initially failed before new
+  classes existed; after implementation they pass. Current Windows cross-build has zero warnings
+  and errors. PowerShell launcher/interactive diagnostics/native visual checks are NOT RUN here.
+- Reports reject network/UNC/device/junction paths and contain no private window titles, user
+  or machine names. SHA-256 package manifest is corruption checking, not a digital signature.
+- Recheck visual identification latency and legibility on actual apps; do not equate subtle
+  styling or compiled native styles with usable click-through. T001 still unchecked.

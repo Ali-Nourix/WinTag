@@ -1,6 +1,7 @@
+using System.Text.Json;
 using WinTag.ColoringSpike;
 
-int passed = 0;
+int passed = PortableChecks.Run();
 void Check(bool condition, string name)
 {
     if (!condition) throw new Exception("FAIL: " + name);
@@ -8,27 +9,42 @@ void Check(bool condition, string name)
 }
 void Reject(Action action, string name)
 {
-    try { action(); } catch (Exception e) when (e is InvalidDataException or FormatException) { passed++; return; }
+    try { action(); } catch (Exception e) when (e is InvalidDataException or ArgumentException or IOException)
+    { passed++; return; }
     throw new Exception("FAIL (accepted invalid input): " + name);
 }
-var valid = new TargetSnapshot(123, 42, 123456789, "WinTag.Spike." + Guid.NewGuid().ToString("N"), 0xffffffff, 0xfffffffe);
-valid.Validate(); passed++;
-Check(Wire.Decode<TargetSnapshot>(Wire.Encode(valid)) == valid, "snapshot round trip including sentinel originals");
-Reject(() => (valid with { Hwnd = 0 }).Validate(), "zero HWND");
-Reject(() => (valid with { ProcessId = 0 }).Validate(), "zero PID");
-Reject(() => (valid with { ProcessBirthTicks = 0 }).Validate(), "missing process birth");
-Reject(() => (valid with { MarkerName = null! }).Validate(), "null marker");
-Reject(() => (valid with { MarkerName = "foreign" }).Validate(), "foreign marker");
-Reject(() => (valid with { MarkerName = "WinTag.Spike.not-a-guid" }).Validate(), "malformed marker nonce");
-Reject(() => Wire.Decode<TargetSnapshot>(null), "missing message");
-Reject(() => Wire.Decode<TargetSnapshot>(new string('x', 8193)), "oversized message");
-Check(Wire.ParseColor("#123456") == 0x00563412, "COLORREF byte ordering");
-Check(Wire.ParseColor("#FFFFFF") == 0x00ffffff, "white");
-Check(Wire.ParseColor("#000000") == 0, "black");
-Reject(() => Wire.ParseColor("#FFF"), "short color");
-Reject(() => Wire.ParseColor("red"), "color name");
-Reject(() => Wire.ParseColor("#GG0000"), "invalid hex");
-var cmd = new GuardianCommand("apply", 0x00123456, 0x007890ab);
-Check(Wire.Decode<GuardianCommand>(Wire.Encode(cmd)) == cmd, "command round trip");
-Check(Wire.Decode<GuardianReply>(Wire.Encode(new GuardianReply(false, "خطا · error"))).Message == "خطا · error", "Persian protocol");
-Console.WriteLine($"PASS: {passed} pure protocol checks. NOT Windows/DWM/IPC/cleanup evidence.");
+Check(OverlayAppearance.CompactLabel(" کار ") == "کار", "trim short tag");
+Check(OverlayAppearance.CompactLabel("") == "تگ", "empty retains a text label");
+Check(OverlayAppearance.CompactLabel("123456789") == "12345678…", "compact text bounded");
+Check(OverlayAppearance.CompactLabel("ا\u065412345678") == "ا\u06541234567…", "combining mark not split");
+Check(OverlayAppearance.HeightDip == 18 && OverlayAppearance.MaxWidthDip == 92, "minimal overlay bounds");
+var report = new SafeCheckReport(false);
+report.Checks.Add(new("Example", CheckStatus.Pass, "Return code only."));
+Check(!report.ProductionAcceptance && !report.ExternalWindowMutationAllowed && !report.CrashInjectionRequested,
+    "passing smoke checks cannot certify production or authorize external mutation/crash");
+Check(!report.HasOperationalFailures, "ordinary pass is not an operational error");
+report.Checks.Add(new("Manual visual", CheckStatus.NotRun, "Needs a human."));
+Check(!report.HasOperationalFailures, "NOT RUN is not mislabeled as failure or acceptance");
+report.Checks.Add(new("Example failure", CheckStatus.Failed, "Type only."));
+Check(report.HasOperationalFailures, "failure affects exit status");
+var json = JsonSerializer.Serialize(report, SafeCheckReport.JsonOptions);
+Check(json.Contains("NotRun") && json.Contains("productionAcceptance"), "readable report schema");
+Check(!json.Contains("windowTitle") && !json.Contains("machineName") && !json.Contains("userName"), "report excludes private identifiers");
+Reject(() => ReportFile.ValidateLeafName("x.txt"), "report must be JSON");
+Reject(() => ReportFile.ValidateLeafName("x.json:stream"), "no alternate data stream");
+Reject(() => ReportFile.ValidateLeafName("../x.json"), "no path separators in leaf");
+Reject(() => ReportFile.ValidateLeafName("CON.json"), "no reserved DOS device");
+var temp = Path.Combine(Path.GetTempPath(), "WinTag-safe-tests-" + Guid.NewGuid().ToString("N"));
+Directory.CreateDirectory(temp);
+try
+{
+    var output = Path.Combine(temp, "report.json");
+    ReportFile.SaveNew(output, report);
+    Check(File.ReadAllText(output).Contains("productionAcceptance"), "new report saved");
+    var bytes = File.ReadAllBytes(output);
+    Reject(() => ReportFile.SaveNew(output, new SafeCheckReport(true)), "existing report never overwritten");
+    Check(File.ReadAllBytes(output).SequenceEqual(bytes), "existing file unchanged");
+    Check(Directory.GetFiles(temp).Length == 1, "no abandoned staged report");
+}
+finally { Directory.Delete(temp, true); }
+Console.WriteLine($"PASS: {passed} portable checks. NOT Windows/DWM/IPC/cleanup evidence.");

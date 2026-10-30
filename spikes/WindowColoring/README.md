@@ -1,7 +1,8 @@
 # T001 — WinTag Window Coloring Spike
 
 **Experimental Windows 11 x64 probe, not the WinTag application.** Source + cross-build are
-available. No Windows UI, DWM, click-through, guardian recovery or resource test has run yet.
+available. This revision has not been Windows-executed by this agent; DWM, click-through,
+guardian recovery and resource acceptance remain unverified.
 T001 remains unchecked and blocks T002/production scaffolding.
 
 ## مرز ایمنی
@@ -83,7 +84,7 @@ Normal exit and broken pipe attempt idempotent restore. Simultaneous failure is 
 ## Evidence actually obtained in this environment
 
 - Linux SDK 10.0.403: Windows x64 Release cross-build/publish succeeded (warnings treated as errors).
-- 18 pure protocol tests passed: snapshot/command/Unicode round-trip, invalid lease fields,
+- Initial v0.1.0: 18 pure protocol tests passed: snapshot/command/Unicode round-trip, invalid lease fields,
   malformed/oversized messages, color parsing and Win32 COLORREF ordering.
 - Windows execution: **NOT RUN**. DWM appearance, guardian IPC/process waits, real click-through,
   title-bar geometry, runtime memory/CPU and forced-exit cleanup remain unverified.
@@ -104,3 +105,63 @@ This Win32/WPF-only Spike disables unused Windows SDK.NET/WinRT framework refere
 framework-dependent package does not include the 25 MB SDK.NET runtime assembly, WinRT.Runtime,
 or the .NET Desktop Runtime. This is a distribution-size optimization, NOT a measured memory
 claim. See THIRD-PARTY-NOTICES.md.
+
+## v0.1.1 — Compact badge and safe LOCAL action
+
+The old 190x25 DIP green pill is replaced with a neutral 18-DIP-high badge, width based on
+text and capped at 92 DIP, a muted 2-DIP color accent and up to eight graphemes plus ellipsis.
+Text is kept legible rather than making the whole indicator nearly invisible. The full text
+remains in the editor/accessibility name. A click-through overlay cannot safely implement an
+interactive hover tooltip without capturing input; no such tooltip is claimed. Custom tabs,
+caption controls, high contrast and the <2-second identification goal still need visual testing.
+
+### One-button action (recommended)
+
+1. Extract this version into a NEW local folder. Run WindowColoring.exe as an ordinary user.
+2. Click **اجرای بررسی امن و ذخیرهٔ گزارش محلی** and choose a new local JSON report filename.
+3. Default is READ ONLY: OS/runtime/architecture, local Windows UBR, standard-user token,
+   18 shared pure-protocol smoke checks, read-only DWM composition, and one controller-only
+   memory snapshot. No other applications are enumerated, changed, closed, minimized or moved.
+4. Optional checkbox allows a NEW disposable companion+guardian only. The action applies and
+   restores colors there, then normally closes its own companion. It does not reuse the manual
+   experiment or a selected real application window. Crash injection is NEVER part of this action.
+5. Report excludes window titles, application inventories, usernames and machine names. It stays
+   local and is never uploaded automatically. Existing files are never overwritten. Network
+   drives, UNC/device paths and junction/symlink report directories are rejected. Choose a local
+   folder not managed by cloud sync if you do not want another installed sync tool to copy it.
+6. Native return-code success is labeled separately from appearance. Visual/click-through/crash,
+   DPI/desktop, idle/combined-memory and traffic checks remain `NotRun`; `productionAcceptance`
+   is always false. The resource snapshot is not proof of the background RAM budget.
+
+### Transparent PowerShell launcher (optional)
+
+The binary package also includes Run-SafeChecks.ps1 and checksums.sha256. In an ordinary
+PowerShell session, from the extracted local folder:
+
+```powershell
+.\Run-SafeChecks.ps1
+# Optional: requires an additional explicit yes at the prompt:
+.\Run-SafeChecks.ps1 -IncludeControlledTarget
+# Or choose a fresh output filename:
+.\Run-SafeChecks.ps1 -ReportPath C:\Temp\WinTag-safe-report.json
+```
+
+It checks the package SHA-256 manifest before running. Checksums detect accidental corruption,
+not authenticity: the package is unsigned. There is no download, administrator elevation,
+execution-policy change, scheduled task, automatic crash or automatic upload. If your policy
+blocks the script, use the in-app button instead; do not disable your security policy.
+Source-build users can use the button directly; the packaged launcher expects the binary
+package's checksum manifest, which is produced during packaging, not checked into source.
+
+The equivalent explicit command is `WindowColoring.exe --safe-checks <new-local-report.json>`;
+adding `--controlled-target` explicitly opts into the disposable target test. Exit 0 means the
+limited requested checks ran without an operational error, not that native acceptance passed;
+exit 2 indicates a failed/blocked check, exit 1 indicates launch/report-output failure.
+The launcher/Windows action are source-reviewed and cross-compiled, NOT Windows-executed here.
+
+### Portable test coverage
+
+The development self-test suite now has 37 passing portable checks, including the original
+18 reused in the local action plus compact Unicode labels, fixed safety flags, local report
+schema, device-name rejection, atomic new-report writes and no-overwrite preservation.
+None constitutes Windows API, visual, mouse-input or crash-recovery evidence.
