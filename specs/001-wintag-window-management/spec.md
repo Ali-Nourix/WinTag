@@ -293,7 +293,9 @@ window appearance, input usability and absence of runtime network traffic.
   choose their colors, and assign an ordered list of tags to a window. The first tag is primary.
 - **FR-004**: Tagged windows MUST visibly show primary-tag text and color on their title bars.
   Editing the primary tag or its color MUST update the cues; removing all tags MUST restore
-  the original appearance. Cues MUST NOT block the target app's controls or input.
+  the original appearance. Cues MUST NOT block the target app's controls or input. Presentation
+  MUST be compact and low-emphasis, using a narrow color accent rather than a wide filled strip,
+  while keeping the text readable and the identification success criterion unchanged.
 - **FR-005**: Users MUST be able to define ordered automatic rules using process name, window
   class, title text or regular expressions, including combinations. All conditions within a
   rule MUST match; first matching rule by priority and list order supplies its ordered tags.
