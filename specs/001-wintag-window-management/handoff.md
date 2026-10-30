@@ -17,3 +17,12 @@ Date: 2026-10-30. Publication target: main.
   compiler, unit test, prototype or Spike was run. Only Spec Kit scaffolding and documentation.
 - Next step: obtain explicit implementation approval, then execute T001 and T002 in order
   on a Windows 11 test machine. Do not auto-implement based on this handoff.
+
+## Superseding implementation update — 2026-10-30
+
+The user approved starting implementation and proceeding despite pending Windows checks.
+The earlier documentation-only snapshot above is historical, not current implementation status.
+T001 probe and 18 portable protocol checks are implemented; Windows x64 cross-build/publish
+succeeds. T001 remains unchecked pending actual Windows validation. T002 and all production
+projects are unstarted. See `docs/validation/coloring-spike.md`; never equate compilation with
+DWM/input/crash/performance correctness.

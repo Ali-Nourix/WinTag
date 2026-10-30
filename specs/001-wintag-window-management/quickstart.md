@@ -1,7 +1,8 @@
 # Quickstart and Validation Guide
 
-Status: FUTURE commands, not executed and not runnable until approved tasks create the projects.
-No application source, .sln or test project exists yet. Do NOT run implement based on this guide.
+Status: Production commands below are FUTURE and unexecuted. Implementation is approved; only
+the isolated T001 probe and its portable self-tests now exist. No production app, .sln or
+production test project exists. See spikes/WindowColoring/README.md for the currently built probe.
 
 ## Prerequisites
 
@@ -14,7 +15,7 @@ for offline restore; do not mistake a cached development restore for proof of ap
 
 ## Approval checkpoint and probe order
 
-1. Obtain explicit implementation approval after reviewing tasks.md.
+1. Implementation approval was obtained. Keep native evidence gates open until actually tested.
 2. T001 creates/runs only the isolated coloring Spike in spikes/WindowColoring and updates
    research.md with build/app matrix, original-value capture, click-through and forced-exit results.
 3. T002 creates/runs only the event enumeration prototype in spikes/WindowEnumeration and records

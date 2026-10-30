@@ -1,7 +1,7 @@
 # Research: WinTag
 
 Date: 2026-10-30. This is desk research and an experiment protocol, NOT Windows test evidence.
-No application code or Spike was written or run. The installed Windows build is unavailable in
+T001 probe source and portable checks now exist; Windows execution has NOT run. The installed Windows build is unavailable in
 this Linux authoring environment. Pending experiments are implementation/release gates, not
 unanswered product choices. A capability remains disabled until its gate passes.
 
@@ -258,3 +258,18 @@ All hardware, OS, DPI, app versions and tools accompany results. No figures abov
 All technical choices have a documented conditional decision and fallback. This research is
 complete as a design artifact, not complete as platform feasibility proof. No Windows build
 is currently certified and no package compatibility claim is finalized.
+
+## Implementation progress — T001, 2026-10-30
+
+The isolated coloring probe is now implemented in `spikes/WindowColoring/`; see
+[implementation evidence](../../docs/validation/coloring-spike.md) and the probe README.
+18 cross-platform protocol checks pass; Windows x64 Release cross-build/publish succeeds.
+These verify compilation and pure protocol behavior ONLY. DWM, real target styling, guardian
+IPC/cleanup, click-through, DPI, memory and CPU remain NOT RUN. All G1–G9 platform gates remain
+open. No claim in the earlier 'Spike proved' section is upgraded to a Windows result.
+
+The initial harness limits DWM mutation to a separate controlled companion that seeds exact
+original colors. Real-app color probes are read-only; arbitrary foreign DWM mutation is blocked.
+This allows safe experiments without assuming setter attributes have trustworthy getters.
+Overlay placement is a foreground-only centered trial, not a certified per-app production
+strategy. Native correctness and full task completion require a Windows tester's evidence.
