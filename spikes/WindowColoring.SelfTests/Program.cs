@@ -63,4 +63,26 @@ try
     Check(Directory.GetFiles(temp).Length == 1, "no abandoned staged report");
 }
 finally { Directory.Delete(temp, true); }
+// Reproduce the actual pre-connect AutoFlush bug using real named pipes (no Windows APIs).
+using (var server = new System.IO.Pipes.NamedPipeServerStream("WinTag-test-" + Guid.NewGuid().ToString("N"),
+    System.IO.Pipes.PipeDirection.InOut, 1, System.IO.Pipes.PipeTransmissionMode.Byte, System.IO.Pipes.PipeOptions.Asynchronous))
+{
+    bool reproduced = false;
+    try { using var premature = new StreamWriter(server, leaveOpen: true) { AutoFlush = true }; }
+    catch (InvalidOperationException) { reproduced = true; }
+    Check(reproduced, "pre-connect AutoFlush reproduces reported InvalidState");
+}
+var pipeName = "WinTag-test-" + Guid.NewGuid().ToString("N");
+using (var server = new System.IO.Pipes.NamedPipeServerStream(pipeName, System.IO.Pipes.PipeDirection.InOut,
+    1, System.IO.Pipes.PipeTransmissionMode.Byte, System.IO.Pipes.PipeOptions.Asynchronous))
+using (var client = new System.IO.Pipes.NamedPipeClientStream(".", pipeName, System.IO.Pipes.PipeDirection.InOut,
+    System.IO.Pipes.PipeOptions.Asynchronous))
+{
+    using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+    await Task.WhenAll(server.WaitForConnectionAsync(deadline.Token), client.ConnectAsync(deadline.Token));
+    using var writer = new StreamWriter(server, leaveOpen: true) { AutoFlush = true };
+    using var reader = new StreamReader(client, leaveOpen: true);
+    await writer.WriteLineAsync("connected");
+    Check(await reader.ReadLineAsync(deadline.Token) == "connected", "post-connect writer flush handshake works");
+}
 Console.WriteLine($"PASS: {passed} portable checks. NOT Windows/DWM/IPC/cleanup evidence.");

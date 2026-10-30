@@ -92,3 +92,17 @@ Development verification: 49 portable checks PASS; Windows x64 Release cross-bui
 succeeded with zero warnings/errors. v0.1.2 Windows native execution is NOT RUN here.
 Next evidence needed: one opt-in safe-action JSON from v0.1.2; do not elevate or weaken security.
 T001 and every Windows-validation checkbox remain unchanged/incomplete.
+
+## v0.1.2 user evidence → v0.1.3 concrete startup fix
+
+New standard-user report on Windows 26200.8457 reaches TargetIdentity and GuardianTargetIdentity,
+then fails at GuardianSpawn / InvalidState before GuardianPipeConnect. The second run is elevated
+and is correctly Blocked; do not use elevation as a workaround.
+
+Source diagnosis: GuardianSession constructed StreamWriter with AutoFlush=true on an unconnected
+NamedPipeServerStream. AutoFlush immediately flushes, which throws InvalidOperationException.
+Reproduced with real named pipes on Linux; moving construction after WaitForConnection allows
+handshake IO. v0.1.3 moves channel initialization after connection, handles pre-channel cleanup,
+and records GuardianChannelInitialize. 51 portable/real-pipe checks PASS. This is concrete source
+and cross-platform IPC evidence, NOT Windows DWM/guardian/crash acceptance. Runtime gates remain
+open and no task checkbox is upgraded. No raw private reports committed.
