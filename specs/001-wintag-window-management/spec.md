@@ -4,7 +4,7 @@
 
 **Created**: 2026-10-30
 
-**Status**: Draft — specification quality review complete; clarification phase pending
+**Status**: Clarified — product decisions integrated; ready for technical planning
 
 **Input**: User-provided WinTag product specification, resolved DECISIONS, technical input reserved
 for the plan, and the attached Persian SRS draft 0.2 dated 2026-10-30. The current user request
@@ -14,6 +14,18 @@ WinTag is a lightweight Windows 11 tray utility for a power user managing many s
 windows across monitors and virtual desktops. It adds ordered text tags and associated colors,
 and provides a right-edge notch panel that lists each window once. It does not change Windows'
 own Alt+Tab, Task View, or Snap Group presentation; it offers a duplicate-free alternative.
+
+## Clarifications
+
+### Session 2026-10-30
+
+- Q: For tags spanning virtual desktops, gather windows or preserve their desktop placement?
+  → A: Both are required, with separate configurable shortcuts and mode-specific tag pickers.
+- Q: Must the user be able to change shortcuts?
+  → A: Yes; every tag/picker binding is editable through settings and JSON, persists after
+  restart, and rejects conflicts without losing the last working binding.
+- User-authorized workflow update: continue clarify, plan and tasks consecutively with short
+  phase summaries; do not implement or execute the Spike/prototype without approval.
 
 ## User Scenarios & Testing *(mandatory)*
 
