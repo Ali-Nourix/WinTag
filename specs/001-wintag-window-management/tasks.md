@@ -2,7 +2,7 @@
 
 **Input**: `specs/001-wintag-window-management/` spec, plan, research, data model and contracts.
 **Prerequisites**: Approved task list plus Windows 11 evidence environment before execution.
-**Status**: PLANNED ONLY — no application code, probes or test implementations created/run.
+**Status**: IMPLEMENTATION STARTED — T001 probe source/cross-build complete; Windows validation pending. No task completed yet.
 **Tests**: Explicitly requested rule/layout tests plus constitution-required safety/identity,
 shortcut and manual compatibility coverage. Write tests first and observe expected failures.
 **Organization**: Setup -> foundation -> P1 stories (US1/2/3/4/8) -> P2 (US5/6) -> P3 (US7).
@@ -11,13 +11,13 @@ shortcut and manual compatibility coverage. Write tests first and observe expect
 
 `- [ ] Tnnn [P?] [USn?] Description with exact file path`.
 [P] means independent files within a declared wave AFTER listed prerequisites finish, not
-permission to skip prerequisites. Setup/foundation/polish have no story label. All application,
-probe, solution and test paths below are prospective. Existing docs alone are the deliverable now.
+permission to skip prerequisites. Setup/foundation/polish have no story label. T001 probe/self-test paths now exist; all production,
+solution and T002+ test paths remain prospective. See docs/validation/coloring-spike.md for evidence.
 
 
 ## Phase 1: Setup (Shared Infrastructure)
 
-**Goal**: Establish feasibility first, in the exact user-requested order; all work below is future and requires approval.
+**Goal**: Establish feasibility first, in the exact user-requested order; implementation approved, Windows proof still required.
 
 **Independent test / checkpoint**: T001 and T002 record actual Windows evidence before production scaffolding; rejected strategies stay disabled.
 
@@ -151,7 +151,7 @@ probe, solution and test paths below are prospective. Existing docs alone are th
 
 **Goal**: Prove all requested acceptance outcomes without weakening safety/resource/privacy constraints.
 
-**Independent test / checkpoint**: All SC-001–SC-015 have raw Windows evidence; no NOT RUN gate is treated as pass; implementation still requires separate approval now.
+**Independent test / checkpoint**: All SC-001–SC-015 have raw Windows evidence; no NOT RUN gate is treated as pass; full release still requires separate approval.
 
 - [ ] T063 [P] Write end-user Persian/English setup/keyboard/configuration guidance and scope/limitations in `docs/user-guide.fa.md` and `docs/user-guide.en.md`; document both modes and every editable binding (FR-013/026). (Depends on: T062.)
 - [ ] T064 [P] Create measurement harness/runbook at `tests/WinTag.Windows.Tests/PerformanceAcceptanceTests.cs` and `docs/validation/performance.md`; record 100 opens all <100 ms, 10 min idle <=0.6 s one-core CPU, combined private-working-set AND committed peaks <100,000,000 bytes with 50 windows (G8). (Depends on: T062.)
@@ -237,7 +237,8 @@ until supported-build evidence exists. Neither is an exception to the constituti
 
 ## Implementation Strategy
 
-1. STOP now for implementation approval; no task is checked off just because docs exist.
+1. Implementation and proceeding with open Windows checks were explicitly approved. T001 is
+   in progress; no task is checked off just because code compiles or docs exist.
 2. Once approved, execute T001 then T002 in order on Windows and review feasibility evidence.
 3. Complete foundation, then US1 as a minimal identification MVP with manual tags, title text/
    color and crash safety. No notch/rules required for this first useful increment.
