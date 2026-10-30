@@ -49,22 +49,51 @@ internal static class SafeLocalChecks
 
         if (includeControlledTarget && !report.HasOperationalFailures)
         {
+            var stage = "ControlledStart";
+            void Enter(string name)
+            {
+                stage = name;
+                report.Checks.Add(new(name, CheckStatus.Info, "Stage entered; not a success result."));
+            }
+            ControlledSession? session = null;
             try
             {
-                await using (var session = await ControlledSession.StartAsync())
-                {
-                    await session.Guardian.SendAsync(new("apply", Wire.ParseColor("#4D665A"), Wire.ParseColor("#789889")));
-                    await session.Guardian.SendAsync(new("restore"));
-                    report.Checks.Add(new("ControlledDwmReturnCodes", CheckStatus.Pass,
-                        "New companion only: guardian ack, apply and restore returned successfully; appearance not observed."));
-                }
-                report.Checks.Add(new("ControlledCompanionCleanup", CheckStatus.Pass,
-                    "Guardian disposal and normal close of this action's own companion completed. No existing app was closed."));
+                session = await ControlledSession.StartAsync(Enter);
+                Enter("ControlledApply");
+                await session.Guardian.SendAsync(new("apply", Wire.ParseColor("#4D665A"), Wire.ParseColor("#789889")));
+                report.Checks.Add(new("ControlledApply", CheckStatus.Pass, "Native return success only; appearance not observed."));
+                Enter("ControlledRestore");
+                await session.Guardian.SendAsync(new("restore"));
+                report.Checks.Add(new("ControlledRestore", CheckStatus.Pass, "Native return success only; visual recovery not verified."));
             }
             catch (Exception error)
             {
-                report.Checks.Add(new("ControlledDwmOrCleanup", CheckStatus.Failed,
-                    error.GetType().Name + ": inspect the disposable companion if still open. No force-kill attempted."));
+                report.Checks.Add(new(stage, CheckStatus.Failed, SafeDiagnostics.Describe(error)));
+            }
+            finally
+            {
+                if (session is not null)
+                {
+                    Enter("ControlledCleanup");
+                    try
+                    {
+                        await session.FinishAsync(Enter);
+                        report.Checks.Add(new("ControlledCleanup", CheckStatus.Pass,
+                            "Guardian disposal and normal close of this action's own companion completed."));
+                    }
+                    catch (CleanupFailures errors)
+                    {
+                        for (var i = 0; i < errors.Errors.Count; i++)
+                            report.Checks.Add(new(errors.Stages[i], CheckStatus.Failed, SafeDiagnostics.Describe(errors.Errors[i])));
+                    }
+                    catch (Exception error)
+                    {
+                        report.Checks.Add(new(stage, CheckStatus.Failed, SafeDiagnostics.Describe(error)));
+                    }
+                }
+                else
+                    report.Checks.Add(new("ControlledCleanup", CheckStatus.NotRun,
+                        "Session did not initialize; best-effort normal close was requested for its own child. Inspect any leftover companion manually."));
             }
         }
         else if (!includeControlledTarget)

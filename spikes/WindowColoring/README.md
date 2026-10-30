@@ -165,3 +165,29 @@ The development self-test suite now has 37 passing portable checks, including th
 18 reused in the local action plus compact Unicode labels, fixed safety flags, local report
 schema, device-name rejection, atomic new-report writes and no-overwrite preservation.
 None constitutes Windows API, visual, mouse-input or crash-recovery evidence.
+
+## v0.1.2 — Stage-specific safe diagnostics
+
+This revision improves diagnosis; it does **not** claim to fix the underlying Windows DWM
+failure or reduce memory. Extract into a **fresh local folder**; never mix child processes or
+binaries from different probe versions. Run normally (not Administrator). Select the optional
+controlled-target checkbox and use the same safe-check button once. Share the newly saved JSON
+if desired. A failed report is still useful evidence; do not retry with elevated privileges.
+
+- JSON schema 2 identifies the entered stage: target spawn/connect/handshake/identity,
+  guardian spawn/connect/handshake, controlled apply/restore and guardian/target cleanup.
+- The controlled target now sends setup failures back through its private pipe; native DWM
+  failures preserve HRESULTs. Guardian replies use fixed diagnostic codes, never raw error text.
+- Primary apply/startup failures are no longer replaced by later cleanup failures; cleanup has
+  separate results. Multiple cleanup errors are retained separately.
+- No exception messages, stack traces, private paths, titles, HWNDs/PIDs, user or machine names
+  are persisted. No uploads, forced crashes/kills, elevation or security-setting changes added.
+- 49 portable regression checks pass and the Windows cross-build succeeds. Native execution
+  of v0.1.2 is NOT RUN by the agent; the v0.1.1 reports do not certify this revision.
+- Evidence received from the user: Windows 26200.8457 x64/.NET 10.0.11, v0.1.1 read-only checks
+  passed; opt-in controlled DWM/cleanup failed with a generic InvalidOperationException. The
+  failing substep and native HRESULT were not recorded, so the cause is still unknown.
+- Reported controller memory snapshots exceeded the product's 100 MB goal. They were not
+  steady-state/combined-process measurements; neither acceptance nor optimization is claimed.
+
+Runtime/manual safety and performance gates stay open; T001 remains incomplete.

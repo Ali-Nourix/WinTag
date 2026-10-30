@@ -8,7 +8,7 @@ public sealed record LocalCheck(string Name, CheckStatus Status, string Note);
 
 public sealed class SafeCheckReport(bool controlledTargetRequested)
 {
-    public int SchemaVersion => 1;
+    public int SchemaVersion => 2;
     public string RunId { get; } = Guid.NewGuid().ToString("N");
     public DateTimeOffset CreatedUtc { get; } = DateTimeOffset.UtcNow;
     public bool ControlledTargetRequested { get; } = controlledTargetRequested;

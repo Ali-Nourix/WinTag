@@ -71,3 +71,24 @@ No production source, T002 or T003 has been created. All checklist markers remai
   or machine names. SHA-256 package manifest is corruption checking, not a digital signature.
 - Recheck visual identification latency and legibility on actual apps; do not equate subtle
   styling or compiled native styles with usable click-through. T001 still unchecked.
+
+## v0.1.1 user evidence and v0.1.2 diagnostic revision
+
+User-provided local reports dated 2026-10-30 identify Windows 26200.8457 x64, .NET 10.0.11,
+and probe v0.1.1. Both report Windows/standard-user/pure-protocol/DWM-composition checks Pass.
+The non-opt-in run has no operational failures. The opt-in run records
+`ControlledDwmOrCleanup: Failed / InvalidOperationException`, without a substep or native
+HRESULT. This does NOT establish the root cause, a successful apply, or successful restoration.
+No private raw report or screenshot is committed. Controller working-set snapshots were
+177381376 and 200511488 bytes: above the product goal, but not idle/combined-process acceptance.
+
+v0.1.2 adds schema-2 entered-stage diagnostics, safe child setup/guardian failure replies,
+fixed error codes with DWM HRESULT where available, and separate cleanup failures without
+masking earlier errors. Read-only defaults, standard-user operation, controlled-only DWM,
+no network/upload and manual runtime gates remain unchanged. Manual and automatic target
+launches both consume the updated protocol. No production implementation or T002 is added.
+
+Development verification: 49 portable checks PASS; Windows x64 Release cross-build/publish
+succeeded with zero warnings/errors. v0.1.2 Windows native execution is NOT RUN here.
+Next evidence needed: one opt-in safe-action JSON from v0.1.2; do not elevate or weaken security.
+T001 and every Windows-validation checkbox remain unchanged/incomplete.

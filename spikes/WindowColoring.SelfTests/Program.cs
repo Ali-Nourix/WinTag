@@ -34,6 +34,22 @@ Reject(() => ReportFile.ValidateLeafName("x.txt"), "report must be JSON");
 Reject(() => ReportFile.ValidateLeafName("x.json:stream"), "no alternate data stream");
 Reject(() => ReportFile.ValidateLeafName("../x.json"), "no path separators in leaf");
 Reject(() => ReportFile.ValidateLeafName("CON.json"), "no reserved DOS device");
+// Regression: diagnostics must carry useful fixed codes without leaking raw error strings.
+Check(SafeDiagnostics.Code(new ProbeFailure(DiagnosticCode.TargetLeaseInvalid)) == DiagnosticCode.TargetLeaseInvalid, "specific identity failure preserved");
+Check(SafeDiagnostics.Describe(new InvalidOperationException("SECRET-TITLE C:\\Users\\private")) == "InvalidState; no exception message or private identifiers recorded.", "exception messages redacted");
+Check(SafeDiagnostics.Code(new TimeoutException()) == DiagnosticCode.Timeout, "timeout classified");
+Check(SafeDiagnostics.Code(new OperationCanceledException()) == DiagnosticCode.Timeout, "cancelled deadline classified");
+Check(SafeDiagnostics.Code(new IOException("private path")) == DiagnosticCode.PipeIo, "pipe IO classified");
+Check(SafeDiagnostics.Code(new UnauthorizedAccessException()) == DiagnosticCode.AccessDenied, "access classified without elevation");
+Check(SafeDiagnostics.Code(new InvalidDataException()) == DiagnosticCode.InvalidPayload, "invalid payload classified");
+Check(SafeDiagnostics.Code(new ProbeFailure((DiagnosticCode)999)) == DiagnosticCode.Unknown, "unknown remote enum rejected");
+var failure = new ProbeFailure(DiagnosticCode.DwmSetFailed, unchecked((int)0x80070005));
+Check(SafeDiagnostics.Describe(failure).Contains("0x80070005"), "DWM HRESULT retained");
+var reply = Wire.Decode<GuardianReply>(Wire.Encode(new GuardianReply(false, "Command rejected.", failure.Code, failure.NativeHResult)));
+Check(reply.ErrorCode == DiagnosticCode.DwmSetFailed && reply.NativeHResult == failure.NativeHResult, "guardian error roundtrip");
+var hello = Wire.Decode<TargetHello>(Wire.Encode(new TargetHello(null, failure.Code, failure.NativeHResult)));
+Check(hello.Target is null && hello.ErrorCode == failure.Code, "target startup failure roundtrip");
+Check(report.SchemaVersion == 2, "diagnostic schema bumped");
 var temp = Path.Combine(Path.GetTempPath(), "WinTag-safe-tests-" + Guid.NewGuid().ToString("N"));
 Directory.CreateDirectory(temp);
 try
