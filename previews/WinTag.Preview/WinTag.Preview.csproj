@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+ <PropertyGroup>
+  <OutputType>WinExe</OutputType><Version>0.2.0</Version>
+  <TargetFramework>net10.0-windows10.0.22000.0</TargetFramework>
+  <UseWPF>true</UseWPF><UseWindowsForms>true</UseWindowsForms><EnableWindowsTargeting>true</EnableWindowsTargeting>
+  <IncludeWindowsSDKRefFrameworkReferences>false</IncludeWindowsSDKRefFrameworkReferences>
+  <AllowUnsafeBlocks>true</AllowUnsafeBlocks><PlatformTarget>x64</PlatformTarget><RuntimeIdentifier>win-x64</RuntimeIdentifier>
+  <!-- WPF owns DPI/lifetime; Forms is used for NotifyIcon/Screen only. -->
+  <NoWarn>$(NoWarn);WFO0003</NoWarn><Nullable>enable</Nullable><TreatWarningsAsErrors>true</TreatWarningsAsErrors><ApplicationManifest>app.manifest</ApplicationManifest>
+  <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+ </PropertyGroup>
+ <ItemGroup><PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.367" PrivateAssets="all" /></ItemGroup>
+</Project>
