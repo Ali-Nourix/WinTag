@@ -30,7 +30,7 @@ internal sealed class ProbeWindow : Window
 
     internal ProbeWindow()
     {
-        Title = "WinTag — T001 coloring Spike v0.1.2 (NOT production)";
+        Title = "WinTag — T001 coloring Spike v0.1.3 (NOT production)";
         Width = 930; Height = 850;
         var panel = new StackPanel { Margin = new Thickness(18) };
         Content = new ScrollViewer { Content = panel, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };

@@ -1,0 +1,33 @@
+using WinTag.Preview;
+using System.Text.Json;
+int count = 0;
+void Check(bool x) { if (!x) throw new Exception("Preview regression failed."); count++; }
+void Reject(Action f) { try { f(); } catch (Exception e) when (e is InvalidDataException or ArgumentException) { count++; return; } throw new Exception("Invalid config accepted."); }
+var c = new Config(); c.Validate(); Check(c.Tags.Count == 2);
+Check(Search.Contains("علي كاربری", "علی کار"));
+Check(Search.Contains("توسعه‌دهنده", "توسعه دهنده"));
+var title = "عنوان فارسی"; Check(Search.Normalize(title) != "" && title == "عنوان فارسی");
+c.Rules.Add(new("firefox","","",false,1,["work"]));
+Check(Search.Match(c,"FIREFOX","","",null).SequenceEqual(new[]{"work"}));
+Check(Search.Match(c,"firefox","","",[]).Length == 0);
+Check(Search.Match(c,"firefox","","",["personal"]).Single() == "personal");
+c.Rules.Add(new("firefox","","",false,0,["personal"]));
+Check(Search.Match(c,"firefox","","",null).Single() == "personal");
+c.Rules.Clear(); c.Rules.Add(new("firefox","Class","^کار",true,0,["work"]));
+Check(Search.Match(c,"firefox","Class","کار من",null).Single() == "work");
+Check(Search.Match(c,"firefox","Other","کار من",null).Length == 0);
+Check(Search.Match(c,"firefox","Class","دیگر",null).Length == 0);
+var copy = Store.Parse(JsonSerializer.Serialize(c,Config.Json)); Check(copy.Tags[0].Name == "کار");
+copy.Hotkeys.Add(copy.Hotkeys[0]); Reject(copy.Validate);
+copy = new Config { HotZoneHeightFraction = double.NaN }; Reject(copy.Validate);
+copy = new Config { PreviewSchema = "future" }; Reject(copy.Validate);
+copy = new Config(); copy.Tags.Add(copy.Tags[0]); Reject(copy.Validate);
+copy = new Config(); copy.Rules.Add(new("a","","[",true,0,["work"])); Reject(copy.Validate);
+copy = new Config(); copy.Rules.Add(new("a","","",false,0,["unknown"])); Reject(copy.Validate);
+copy = new Config(); copy.Rules.Add(new("","","",false,0,[])); Reject(copy.Validate);
+copy = new Config(); copy.Hotkeys.Add(new("Gather","work",11,49)); Reject(copy.Validate);
+copy = new Config(); copy.Rules.Add(new(null!,"","",false,0,["work"])); Reject(copy.Validate);
+copy = new Config(); copy.Rules.Add(new("a","","",false,0,["work","work"])); Reject(copy.Validate);
+copy = new Config { SharedDwellMs = -1 }; Reject(copy.Validate);
+Check(!new Config().ExperimentalTitleBadge);
+Console.WriteLine($"PASS: {count} preview model/config/rule checks; not Windows runtime evidence.");

@@ -36,12 +36,15 @@ internal sealed class GuardianSession : IAsyncDisposable
         using var self = Process.GetCurrentProcess();
         stage?.Invoke("GuardianSpawn");
         var process = Program.Spawn("--guardian", name, self.Id.ToString(), self.StartTime.ToUniversalTime().Ticks.ToString());
-        var session = new GuardianSession(target, pipe, process);
+        GuardianSession? session = null;
         try
         {
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(15));
             stage?.Invoke("GuardianPipeConnect");
             await pipe.WaitForConnectionAsync(timeout.Token);
+            // AutoFlush flushes immediately: constructing the writer before connection throws.
+            stage?.Invoke("GuardianChannelInitialize");
+            session = new GuardianSession(target, pipe, process);
             stage?.Invoke("GuardianHandshake");
             await session._writer.WriteLineAsync(Wire.Encode(target));
             var ack = Wire.Decode<GuardianReply>(await session._reader.ReadLineAsync(timeout.Token));
@@ -50,7 +53,16 @@ internal sealed class GuardianSession : IAsyncDisposable
         }
         catch
         {
-            try { await session.DisposeAsync(); } catch (Exception) { /* Keep original startup error. */ }
+            if (session is not null)
+                try { await session.DisposeAsync(); } catch (Exception) { /* Keep original startup error. */ }
+            else
+            {
+                pipe.Dispose(); // no snapshot acknowledged, therefore no mutation authorized
+                try { await process.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(3)); }
+                catch (TimeoutException) { /* Never force-kill. */ }
+                catch (InvalidOperationException) { /* Already exited/unassociated. */ }
+                process.Dispose();
+            }
             throw;
         }
     }

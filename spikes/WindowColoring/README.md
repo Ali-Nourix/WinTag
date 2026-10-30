@@ -191,3 +191,12 @@ if desired. A failed report is still useful evidence; do not retry with elevated
   steady-state/combined-process measurements; neither acceptance nor optimization is claimed.
 
 Runtime/manual safety and performance gates stay open; T001 remains incomplete.
+
+## v0.1.3 — Fix for pre-connect AutoFlush
+
+The new user report reaches GuardianSpawn but not GuardianPipeConnect. A real named-pipe
+reproducer confirms StreamWriter AutoFlush on the unconnected server throws InvalidOperationException.
+StreamReader/Writer construction now follows WaitForConnectionAsync, with safe pre-channel
+cleanup on failure. The suite has 51 passing portable/IPC checks. Native Windows DWM/crash
+verification remains pending; elevation is not a workaround. This fixed diagnostic tool is
+optional alongside the isolated usable preview, not a prerequisite for opening that preview.
