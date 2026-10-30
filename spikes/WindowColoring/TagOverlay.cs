@@ -16,6 +16,7 @@ internal sealed class TagOverlay : Window, IDisposable
     private readonly uint _targetPid;
     private readonly long _targetBirth;
     private nint _hwnd;
+    private readonly double _widthDip;
 
     internal TagOverlay(nint target, string tag)
     {
@@ -27,13 +28,24 @@ internal sealed class TagOverlay : Window, IDisposable
         _targetBirth = targetProcess.StartTime.ToUniversalTime().Ticks;
         WindowStyle = WindowStyle.None; AllowsTransparency = true; Background = Brushes.Transparent;
         ShowInTaskbar = false; ShowActivated = false; ResizeMode = ResizeMode.NoResize;
-        Focusable = false; Width = 190; Height = 25;
+        Focusable = false; Height = OverlayAppearance.HeightDip;
+        var label = new TextBlock
+        {
+            Text = OverlayAppearance.CompactLabel(tag), Foreground = new SolidColorBrush(Color.FromRgb(232, 235, 232)),
+            FontSize = 10.5, FlowDirection = FlowDirection.RightToLeft,
+            TextTrimming = TextTrimming.CharacterEllipsis, VerticalAlignment = VerticalAlignment.Center
+        };
+        System.Windows.Automation.AutomationProperties.SetName(this, tag);
+        label.Measure(new Size(double.PositiveInfinity, OverlayAppearance.HeightDip));
+        _widthDip = Math.Clamp(label.DesiredSize.Width + 14, 32, OverlayAppearance.MaxWidthDip);
+        Width = _widthDip;
         Content = new Border
         {
-            Background = new SolidColorBrush(Color.FromArgb(230, 24, 100, 70)),
-            CornerRadius = new CornerRadius(5), Padding = new Thickness(8, 2, 8, 2),
-            Child = new TextBlock { Text = tag, Foreground = Brushes.White, FontSize = 13,
-                FlowDirection = FlowDirection.RightToLeft, TextTrimming = TextTrimming.CharacterEllipsis }
+            Background = new SolidColorBrush(Color.FromArgb(215, 34, 37, 35)),
+            BorderBrush = new SolidColorBrush(Color.FromRgb(112, 154, 132)),
+            BorderThickness = new Thickness(0, 0, 2, 0),
+            CornerRadius = new CornerRadius(3), Padding = new Thickness(5, 0, 5, 0),
+            Child = label
         };
         SourceInitialized += (_, _) =>
         {
@@ -66,13 +78,13 @@ internal sealed class TagOverlay : Window, IDisposable
         if (_targetDestroyed || !SameProcessInstance()) { Dispose(); return; }
         if (!Native.IsUsable(_target) || !Native.GetBounds(_target, out var rect)) { Hide(); return; }
         var scale = Native.Dpi(_target) / 96.0;
-        var width = (int)Math.Min(190 * scale, (rect.right - rect.left) * .35);
-        if (width < 70) { Hide(); return; }
+        var width = (int)Math.Min(_widthDip * scale, (rect.right - rect.left) * .20);
+        if (width < 30 * scale) { Hide(); return; }
         // Deliberately trial-only centered placement: custom tabs/caption buttons require manual audit.
         var x = rect.left + ((rect.right - rect.left) - width) / 2;
-        var y = rect.top + (int)(5 * scale);
+        var y = rect.top + (int)(6 * scale);
         if (!IsVisible) Show();
-        Native.PlaceOverlay(_hwnd, x, y, width, (int)(25 * scale));
+        Native.PlaceOverlay(_hwnd, x, y, width, (int)(OverlayAppearance.HeightDip * scale));
     }
 
     private bool SameProcessInstance()

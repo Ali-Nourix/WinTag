@@ -14,6 +14,13 @@ public sealed record WindowChoice(nint Handle, uint ProcessId, string Title)
 
 internal static unsafe class Native
 {
+    internal static bool IsCompositionEnabled()
+    {
+        var hr = PInvoke.DwmIsCompositionEnabled(out var enabled);
+        if (hr.Failed) throw new InvalidOperationException("DWM composition query failed.");
+        return enabled;
+    }
+
     internal const uint CaptionAttribute = 35, BorderAttribute = 34;
     internal static HWND H(nint handle) => (HWND)handle;
 
